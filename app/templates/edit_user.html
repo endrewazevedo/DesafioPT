@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Editar informações</title>
+  </head>
+  <style>
+    form {
+        line-height: 1.5em;
+    }
+  </style>
+  <body>
+    <h1>Editar informações</h1>
+    <form action="/edit_user_db" method="POST">
+        <label for="id">ID (Não editável):</label>
+        <input type="text" name="id" id="id" value="{{ user.id }}" readonly>
+        <br>
+        <label for="nome">Nome*:</label>
+        <input type="text" name="nome" id="nome" value="{{ user.nome }}" required>
+        <br>
+        <label for="email">Email:</label>
+        <input type="email" name="email" id="email" value="{{ user.email }}" required>
+        <br>
+        <label for="pais">País:</label>
+        <input type="text" name="pais" id="pais" value="{{ user.pais }}" required>
+        <br>
+        <label for="estado">Estado:</label>
+        <input type="text" name="estado" id="estado" value="{{ user.estado }}" required>
+        <br>
+        <label for="municipio">Município:</label>
+        <input type="text" name="municipio" id="municipio" value="{{ user.municipio }}" required>
+        <br>
+        <label for="cep">CEP:</label>
+        <input type="text" name="cep" id="cep" value="{{ user.cep }}" required>
+        <br>
+        <label for="rua">Rua:</label>
+        <input type="text" name="rua" id="rua" value="{{ user.rua }}" required>
+        <br>
+        <label for="numero">Número:</label>
+        <input type="text" name="numero" id="numero" value="{{ user.numero }}" required>
+        <br>
+        <label for="complemento">Complemento:</label>
+        <input type="text" name="complemento" id="complemento" value="{{ user.complemento }}">
+        <br>
+        <label for="cpf">CPF:</label>
+        <input type="text" name="cpf" id="cpf" value="{{ user.cpf }}" required>
+        <br>
+        <label for="pis">PIS:</label>
+        <input type="text" name="pis" id="pis" value="{{ user.pis }}" required>
+        <br>
+        <label for="senha">Senha:</label>
+        <input type="password" name="senha" id="senha" required>
+        <br>
+        <input type="submit" value="Salvar">
+    </form>
+    <form action="/delete_user" method="POST">
+        <input type="hidden" name="id" value="{{ user.id }}">
+        <input type="submit" value="Excluir conta">
+    </form>
+  </body>
+</html>
