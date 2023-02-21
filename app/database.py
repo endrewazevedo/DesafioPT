@@ -1,16 +1,33 @@
 import mysql.connector
 import os
 
+# host='mysql-container',
+# port=3307,
+
 class DB():
     def __init__(self):
 
-        self.cnx = mysql.connector.connect(
+        self.cnx = mysql.connector.connect( #Docker Database
             user='root',
-            password='Mundoazuleverde2121!!@',
-            host='127.0.0.1',
+            password='Desafioponto123',
+            host='172.17.0.2',
             database='desafio_ponto'
         )
         self.cursor = self.cnx.cursor()
+
+        # self.cnx = mysql.connector.connect( ##Local Database
+        #     user='root',
+        #     password='Mundoazuleverde2121!!@',
+        #     host='127.0.0.1',
+        #     database='desafio_ponto'
+        # )
+        # self.cursor = self.cnx.cursor()
+
+    def get_users(self):
+        query = "SELECT * FROM usuarios"
+        self.cursor.execute(query)
+        result = self.cursor.fetchall()
+        return result
 
     def backup(self): #Used in docker
         backup_path = os.path.join(os.getcwd(), 'backup.sql')
@@ -20,111 +37,124 @@ class DB():
 
     def exclude_user(self,id):
         # Inserir as informações do formulário no banco de dados
-        update_usuario = f"""DELETE FROM usuarios 
-                        WHERE id={id}"""
-        self.cursor.execute(update_usuario)
+        try:
+            update_usuario = f"""DELETE FROM usuarios WHERE id='{id}'"""
+            result = self.cursor.fetchone()
+            self.cursor.execute(update_usuario)
 
-        self.cnx.commit()
-
-        # Fechar cursor e conexão com o banco de dados
-        self.cursor.close()
-        self.cnx.close()
+            self.cnx.commit()
+            
+            return "Usuário com id {id} excluído com sucesso"
+        except Exception as e:
+            print(e)
+            return f"Ocorreu um erro ao tentar excluir o usuário de id {id}"
 
     def edit_user_db(self, data_usuario):
         # Inserir as informações do formulário no banco de dados
-        update_usuario = ("UPDATE usuarios SET "
-                        "nome=%s, email=%s, pais=%s, estado=%s, municipio=%s, cep=%s, rua=%s, "
-                        "numero=%s, complemento=%s, cpf=%s, pis=%s, senha=%s "
-                        "WHERE id=%s")
+        try:
+            update_usuario = ("UPDATE usuarios SET "
+                            "nome=%s, email=%s, pais=%s, estado=%s, municipio=%s, cep=%s, rua=%s, "
+                            "numero=%s, complemento=%s, cpf=%s, pis=%s, senha=%s "
+                            "WHERE id=%s")
 
-        self.cnxcursor.execute(update_usuario, data_usuario)
+            self.cursor.execute(update_usuario, data_usuario)
 
-        self.cnxcnx.commit()
+            self.cnx.commit()
+            return "Alteração feita com sucesso"
 
-        # Fechar cursor e conexão com o banco de dados
-        self.cnxcursor.close()
-        self.cnxcnx.close()
+        except Exception as e:
+            return 'Não foi possível atualizar as informações, verifique se preenche todos os dados corretamente'
+
+    def edit_some_info_user(self, id, field, info):
+        # Inserir as informações do formulário no banco de dados
+        try:
+            print(id, field, info)
+
+            update_usuario = f"""UPDATE usuarios SET {field}='{info}' WHERE id={id}"""
+
+            self.cursor.execute(update_usuario)
+
+            self.cnx.commit()
+            return "Alteração feita com sucesso"
+
+        except Exception as e:
+            print(e)
+            return 'Não foi possível atualizar as informações, verifique se preenche todos os dados corretamente'
 
     def insert_new_user(self, data_usuario):
         # Inserir as informações do formulário no banco de dados
-        add_usuario = ("INSERT INTO usuarios "
-                    "(nome, email, pais, estado, municipio, cep, rua, numero, complemento, cpf, pis, senha) "
-                    "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
+        try:
+            add_usuario = ("INSERT INTO usuarios "
+                        "(nome, email, pais, estado, municipio, cep, rua, numero, complemento, cpf, pis, senha) "
+                        "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
 
 
-        self.cursor.execute(add_usuario, data_usuario)
+            self.cursor.execute(add_usuario, data_usuario)
 
-        self.cnx.commit()
+            self.cnx.commit()
+            return "Usuário cadastrado com sucesso"
+        
+        except Exception as e:
+            return "Erro ao cadastrar"
 
+    def validate_user(self, identification, senha):
+        self.cursor = self.cnx.cursor()
+
+        query = (f"""SELECT * FROM usuarios WHERE email = '{identification}' OR cpf = '{identification}' OR pis = '{identification}'""")
+        self.cursor.execute(query)
+        result = self.cursor.fetchone()
+        if result is None:
+            # Nenhum usuário foi encontrado com o email fornecido
+            return None
+        
+        user = {
+        "id": result[0],
+        "nome": result[1],
+        "email": result[2],
+        "pais": result[3],
+        "estado": result[4],
+        "municipio": result[5],
+        "cep": result[6],
+        "rua": result[7],
+        "numero": result[8],
+        "complemento": result[9],
+        "cpf": result[10],
+        "pis": result[11],
+        "senha": result[12]
+        }
+
+        if user["senha"] == senha:
+            # A senha fornecida corresponde à senha armazenada no banco de dados
+            return user
+
+    def search_user_to_edit(self, identification):
+
+        query = (f"""SELECT * FROM usuarios WHERE email = '{identification}' OR cpf = '{identification}' OR pis = '{identification}'""")
+        self.cursor.execute(query)
+        result = self.cursor.fetchone()
+        if result is None:
+            # Nenhum usuário foi encontrado com o email fornecido
+            return None
+        
+        user = {
+        "id": result[0],
+        "nome": result[1],
+        "email": result[2],
+        "pais": result[3],
+        "estado": result[4],
+        "municipio": result[5],
+        "cep": result[6],
+        "rua": result[7],
+        "numero": result[8],
+        "complemento": result[9],
+        "cpf": result[10],
+        "pis": result[11],
+        "senha": result[12]
+        }
+
+        return user
+
+    def close_connection(self):
         # Fechar cursor e conexão com o banco de dados
         self.cursor.close()
         self.cnx.close()
-
-def validate_user(self, email, senha):
-
-    query = ("SELECT * FROM usuarios WHERE email = %s")
-    self.cursor.execute(query, (email,))
-    result = self.cursor.fetchone()
-    if result is None:
-        # Nenhum usuário foi encontrado com o email fornecido
-        return None
-    
-    user = {
-    "id": result[0],
-    "nome": result[1],
-    "email": result[2],
-    "pais": result[3],
-    "estado": result[4],
-    "municipio": result[5],
-    "cep": result[6],
-    "rua": result[7],
-    "numero": result[8],
-    "complemento": result[9],
-    "cpf": result[10],
-    "pis": result[11],
-    "senha": result[12]
-    }
-
-    if user["senha"] == senha:
-        # A senha fornecida corresponde à senha armazenada no banco de dados
-        return user
-
-def search_user_to_edit(email):
-    cnx = mysql.connector.connect(
-    user='root',
-    password='Mundoazuleverde2121!!@',
-    host='127.0.0.1',
-    database='desafio_ponto'
-    )
-
-    # Criar cursor para executar comandos no banco de dados
-    cursor = cnx.cursor()
-
-    query = ("SELECT * FROM usuarios WHERE email = %s")
-    cursor.execute(query, (email,))
-    result = cursor.fetchone()
-    if result is None:
-        # Nenhum usuário foi encontrado com o email fornecido
-        return None
-    
-    user = {
-    "id": result[0],
-    "nome": result[1],
-    "email": result[2],
-    "pais": result[3],
-    "estado": result[4],
-    "municipio": result[5],
-    "cep": result[6],
-    "rua": result[7],
-    "numero": result[8],
-    "complemento": result[9],
-    "cpf": result[10],
-    "pis": result[11],
-    "senha": result[12]
-    }
-
-    return user
-
-db = DB()
-
-db.backup()
